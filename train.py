@@ -14,23 +14,23 @@ from vit import ViT
 
 """ Hyperparameters """
 hp = {}
-hp["image_size"] = 200
+hp["image_size"] = 128 #200 to 128
 hp["num_channels"] = 3
-hp["patch_size"] = 25
+hp["patch_size"] = 16 # 25 to 16
 hp["num_patches"] = (hp["image_size"]**2) // (hp["patch_size"]**2)
 hp["flat_patches_shape"] = (hp["num_patches"], hp["patch_size"]*hp["patch_size"]*hp["num_channels"])
 
-hp["batch_size"] = 32
+hp["batch_size"] = 16 # 32 to 16
 hp["lr"] = 1e-4
-hp["num_epochs"] = 30
+hp["num_epochs"] = 20 # 30 to 20
 hp["num_classes"] = 2
 hp["class_names"] = ["RoughBark","StripeCanker"]
 
 hp["num_layers"] = 12
-hp["hidden_dim"] = 768
-hp["mlp_dim"] = 3072
-hp["num_heads"] = 12
-hp["dropout_rate"] = 0.1
+hp["hidden_dim"] = 384 # 768 to 384
+hp["mlp_dim"] = 1536 #3072 to 1536
+hp["num_heads"] = 6 # 12 to 6
+hp["dropout_rate"] = 0.2 #0.1 to 0.2
 
 def create_dir(path):
     if not os.path.exists(path):
@@ -60,8 +60,13 @@ def process_image_label(path):
     # for i in range(64):
     #     cv2.imwrite(f"files/{i}.png", patches[i])
 
+    # old 2 lines of code below
     patches = np.reshape(patches, hp["flat_patches_shape"])
     patches = patches.astype(np.float32)
+
+    #new 2 lines of code below to change hp patch size
+    # patches = np.reshape(patches, (-1, hp["patch_size"] * hp["patch_size"] * hp["num_channels"]))
+    # patches = patches.astype(np.float32)
 
     """ Label """
     # print({"path": path})
@@ -106,8 +111,8 @@ if __name__ == "__main__":
 
     """ Paths """
     dataset_path = "./Dataset"
-    model_path = os.path.join("files", "model.h5")
-    csv_path = os.path.join("files", "log.csv")
+    model_path = os.path.join("files", "modelpatch_16.h5")
+    csv_path = os.path.join("files", "logpatch_16.csv")
 
     """ Dataset """
     train_x, valid_x, test_x = load_data(dataset_path)
@@ -130,7 +135,7 @@ if __name__ == "__main__":
         CSVLogger(csv_path),
         EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=False),
     ]
-
+    
     history = model.fit(
         train_ds,
         epochs=hp["num_epochs"],
@@ -139,7 +144,7 @@ if __name__ == "__main__":
     )
 
     import pickle
-    with open('training_history.pkl', 'wb') as file:
+    with open('training_history_patch_16.pkl', 'wb') as file:
         pickle.dump(history.history, file)
 
     ## ...
