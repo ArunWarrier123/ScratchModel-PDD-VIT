@@ -56,27 +56,66 @@ if __name__ == "__main__":
         metrics=["acc"]
     )
 
-    eval_results =  model.evaluate(test_ds)
-    print("Loss:", eval_results[0])
-    print("Accuracy:", eval_results[1])
+    # eval_results =  model.evaluate(test_ds)
+    # print("Loss:", eval_results[0])
+    # print("Accuracy:", eval_results[1])
+
+    # # Evaluate the model on the test set
+    # test_predictions = model.predict(test_ds)
+    # test_true_labels = np.concatenate([labels.numpy() for patches, labels in test_ds])
+    # print(test_true_labels)
+
+    # # Convert one-hot encoded labels back to class indices
+    # test_true_indices = np.argmax(test_true_labels, axis=1)
+    # test_predicted_indices = np.argmax(test_predictions, axis=1)
+    # print(test_predicted_indices)
+    # # # Get filenames from the test dataset
+    # # test_filenames = [filename.numpy().decode('utf-8') for patches, filename in test_ds.unbatch()]
+
+    # # # Identify misclassified indices
+    # # misclassified_indices = np.where(test_true_indices != test_predicted_indices)[0]
+    # # Generate confusion matrix
+    # conf_matrix = confusion_matrix(test_true_indices, test_predicted_indices)
+
+    # # Print the confusion matrix
+    # print("Confusion Matrix:")
+    # print(conf_matrix)
+
+    # # Print classification report
+    # class_names = hp["class_names"]
+    # print("\nClassification Report:")
+    # print(classification_report(test_true_indices, test_predicted_indices, target_names=class_names))
+
+
+
+
+
+
 
     # Evaluate the model on the test set
     test_predictions = model.predict(test_ds)
-    test_true_labels = np.concatenate([labels.numpy() for patches, labels in test_ds])
+    test_true_labels = np.concatenate([labels.numpy() for patches, labels, _ in test_ds])
 
     # Convert one-hot encoded labels back to class indices
     test_true_indices = np.argmax(test_true_labels, axis=1)
     test_predicted_indices = np.argmax(test_predictions, axis=1)
 
-    # Generate confusion matrix
-    conf_matrix = confusion_matrix(test_true_indices, test_predicted_indices)
+    # Get image names from the test dataset
+    test_image_names = [image_name.numpy().decode('utf-8') for _, _, image_name in test_ds.unbatch()]
+
+    # Identify misclassified indices
+    misclassified_indices = np.where(test_true_indices != test_predicted_indices)[0]
 
     # Print the confusion matrix
     print("Confusion Matrix:")
-    print(conf_matrix)
+    print(confusion_matrix(test_true_indices, test_predicted_indices))
 
     # Print classification report
     class_names = hp["class_names"]
     print("\nClassification Report:")
     print(classification_report(test_true_indices, test_predicted_indices, target_names=class_names))
 
+    # Print filenames of misclassified images
+    print("\nMisclassified Image Names:")
+    for index in misclassified_indices:
+        print(f"Image: {test_image_names[index]}, True Label: {class_names[test_true_indices[index]]}, Predicted Label: {class_names[test_predicted_indices[index]]}")

@@ -1,22 +1,22 @@
-# Flower Image Classification using Vision Transformer
-The repository contains the code for the flower image classification using Vision Transformer in the TensorFlow<br/>
+pip install any packages whenever error comes(patchify,scikitlearn-name might be wrong and any other)
+Procedure of working-
 
-- Arxiv Paper: [AN IMAGE IS WORTH 16X16 WORDS:TRANSFORMERS FOR IMAGE RECOGNITION AT SCALE](https://arxiv.org/pdf/2010.11929.pdf)
-- Blog Post: [What is Vision Transformer](https://idiotdeveloper.com/vision-transformer-an-image-is-worth-16x16-words-transformers-for-image-recognition-at-scale/) by Idiot Developer
-- YouTube Tutorial: [Vision Transformer Implementation In TensorFlow](https://youtu.be/Ssndsjh1Zqk)
-- Dataset: [Flow Images Dataset](https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz)
+#running train.py for vit model creation
+keep a folder named Dataset inside have cinnamon plants disease folders
+run train.py first check no, of epochs classnames and num_classes. also check dataset path,model path and csv path
+on succesfull running of train.py u get model in h5 format you can use for anything later
 
-## Architecture
-| ![The block diagram of the Vision Transformer](img/vit.png) |
-| :--: |
-| *The block diagram of the Vision Transformer along with the Transformer Encoder.* |
+vit.py no need to run(if u want to print model arch only then)
 
 
-## Contact:
-For more follow me on:
+#running train_vgg16.py for vgg model creation
+run train_vgg16.py to use pretrained imagenet vgg16 to train on cinnamon dataset (same dataset path as in train.py)
+only if u ever change classes
+change this line
+model.add(layers.Dense(2, activation='softmax'))  # Assuming 2 classes
+adjust epochs and run it it will save vgg model in root directory as output u can use anywhere
 
-- <a href="https://www.youtube.com/idiotdeveloper"> YouTube </a>
-- <a href="https://facebook.com/idiotdeveloper"> Facebook </a>
-- <a href="https://twitter.com/nikhilroxtomar"> Twitter </a>
-- <a href="https://www.instagram.com/nikhilroxtomar"> Instagram </a>
-- <a href="https://t.me/idiotdeveloper"> Telegram </a>
+#run ensemble.py
+make sure num clases,classnames and datasetpath,modelpaths are right
+number of images used by both models are printed during execution. make sure they are same
+else error

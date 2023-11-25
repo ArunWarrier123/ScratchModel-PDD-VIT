@@ -27,15 +27,30 @@ class ClassToken(Layer):
 
 def mlp(x, cf):
     x = Dense(cf["mlp_dim"], activation="gelu")(x)
-    x = Dropout(cf["dropout_rate"])(x)
+    x = Dropout(cf["dropout_rate"])(x) #dropout randomly makes certain neurons 0 to have non-linearity in the model prevent overfitting
     x = Dense(cf["hidden_dim"])(x)
     x = Dropout(cf["dropout_rate"])(x)
     return x
 
+# def transformer_encoder(x, cf):
+#     skip_1 = x
+#     x = LayerNormalization()(x)
+#     x = MultiHeadAttention(
+#         num_heads=cf["num_heads"], key_dim=cf["hidden_dim"]
+#     )(x, x)
+#     x = Add()([x, skip_1])
+
+#     skip_2 = x
+#     x = LayerNormalization()(x)
+#     x = mlp(x, cf)
+#     x = Add()([x, skip_2])
+
+#     return x
+
 def transformer_encoder(x, cf):
     skip_1 = x
     x = LayerNormalization()(x)
-    x = MultiHeadAttention(
+    attention_output = MultiHeadAttention(
         num_heads=cf["num_heads"], key_dim=cf["hidden_dim"]
     )(x, x)
     x = Add()([x, skip_1])
@@ -45,7 +60,20 @@ def transformer_encoder(x, cf):
     x = mlp(x, cf)
     x = Add()([x, skip_2])
 
-    return x
+    skip_3 = x
+    x = LayerNormalization()(x)
+    attention_output2 = MultiHeadAttention(
+        num_heads=cf["num_heads"], key_dim=cf["hidden_dim"]
+    )(x, x)
+    x = Add()([x, skip_3])
+
+    skip_4 = x
+    x = LayerNormalization()(x)
+    x = mlp(x, cf)
+    x = Add()([x, skip_4])
+
+    return x, attention_output
+
 
 def ViT(cf):
     """ Inputs """
@@ -63,29 +91,35 @@ def ViT(cf):
     token = ClassToken()(embed)
     x = Concatenate(axis=1)([token, embed]) ## (None, 257, 768)
 
+    # for _ in range(cf["num_layers"]):
+    #     x = transformer_encoder(x, cf)
+
+    attention_outputs = []
     for _ in range(cf["num_layers"]):
-        x = transformer_encoder(x, cf)
+        x, attention_weights = transformer_encoder(x, cf)
+        attention_outputs.append(attention_weights)
 
     """ Classification Head """
     x = LayerNormalization()(x)     ## (None, 257, 768)
     x = x[:, 0, :]
     x = Dense(cf["num_classes"], activation="softmax")(x)
 
-    model = Model(inputs, x)
+    # model = Model(inputs, x)
+    model = Model(inputs, [x] + attention_outputs)
     return model
 
 
 if __name__ == "__main__":
     config = {}
-    config["num_layers"] = 12
+    config["num_layers"] = 24
     config["hidden_dim"] = 768
     config["mlp_dim"] = 3072
-    config["num_heads"] = 12
+    config["num_heads"] = 24
     config["dropout_rate"] = 0.1
     config["num_patches"] = 256
     config["patch_size"] = 32
     config["num_channels"] = 3
-    config["num_classes"] = 5
+    config["num_classes"] = 2
 
     model = ViT(config)
     model.summary()
